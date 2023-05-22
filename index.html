@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="./css/font-awesome.all.min.css"/>
+    <link rel="stylesheet" href="./css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" integrity="sha512-fD9DI5bZwQxOi7MhYWnnNPlvXdp/2Pj3XSTRrFs5FQa4mizyGLnJcN6tuvUS6LbmgN1ut+XGSABKvjN0H6Aoow==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <title>Blog</title>
+</head>
+<body>
+<nav class="navbar">
+    <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-poo fa-bounce fa-xl"></i>
+    </a>
+    <ul class="navbar-nav">
+        <li><a href="index.html"><i class="fa-solid fa-house"></i></a></li>
+        <li><a href="new-post.html"><i class="fa-solid fa-plus-square"></i></a></li>
+        <li id="username-label"></li>
+        <li><a href="#" onclick="logout()"><i class="fa-solid fa-sign-out"></i></a></li>
+    </ul>
+</nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', ()=>{load()})
+
+    function load(){
+        const token = localStorage.getItem('token');
+        const users = localStorage.getItem('users');
+        const currentUser = localStorage.getItem('currentUser');
+
+        function noPost() {
+            const noPosts = document.createElement('div');
+            noPosts.classList.add('container');
+            noPosts.style.display = 'flex';
+            noPosts.style.justifyContent = 'center';
+            noPosts.style.alignItems = 'center';
+            noPosts.style.flexDirection = 'column';
+
+            noPosts.style.height = '80vh';
+
+
+            const noPostContent = document.createElement('h1');
+            noPostContent.textContent = 'No Posts Yet'
+            noPostContent.style.padding = '5px 10px';
+            noPosts.appendChild(noPostContent);
+
+            const newPostsLink = document.createElement('p');
+            newPostsLink.innerHTML = '<a href="new-post.html" style="font-size: 1.3rem; color: #eeeeee"><i class="fa-solid fa-plus-square" style="font-size: 1.3rem"></i> Add new post</a>';
+            newPostsLink.style.padding = '5px 10px';
+            noPosts.appendChild(newPostsLink);
+
+            document.body.appendChild(noPosts)
+        }
+
+        if(!token){
+            if(users && !currentUser && !window.location.href.endsWith('login.html') && !window.location.href.endsWith('register.html')){
+                window.open('login.html', '_self');
+                return;
+            } else if (!users && !currentUser && !window.location.href.endsWith('register.html')){
+                window.open('register.html', '_self');
+                return;
+            }
+            return;
+        } else {
+            if(currentUser && window.location.href.endsWith('index.html')) {
+                const localPosts = localStorage.getItem('posts');
+                const currentUser = localStorage.getItem('currentUser');
+                if (localPosts && currentUser) {
+                    const posts = JSON.parse(localPosts);
+                    if(posts.length === 0){
+                        noPost();
+                        return;
+                    }
+                    document.getElementById('allposts')?.remove();;
+                    const allPosts = document.createElement('div');
+                    allPosts.id = 'allposts';
+                    posts.forEach((post, index) => {
+                        allPosts.classList.add('container');
+                        allPosts.style.flexDirection = 'column'
+
+                        const postDiv = document.createElement('div');
+                        postDiv.classList.add('post-div');
+
+                        const top = document.createElement('div');
+                        top.style.height = '30px';
+                        top.style.display = 'flex';
+                        top.style.justifyContent = 'space-between';
+                        top.style.alignItems = 'center';
+                        top.style.width = '100%';
+                        top.style.padding = '5px 10px';
+
+                        const currentUserName = document.createElement('span');
+                        currentUserName.style.height = '100%';
+                        currentUserName.style.width = '100%';
+                        currentUserName.style.display = 'flex';
+                        currentUserName.style.justifyContent = 'start';
+                        currentUserName.style.alignItems = 'center';
+                        currentUserName.innerHTML = "<span style='width: 30px; height: 30px; border-radius: 50%; background-color: #eeeeee; margin-right: 10px'></span>" + post.author;
+                        currentUserName.style.paddingLeft = '10px';
+
+                        top.appendChild(currentUserName)
+
+                        if(post.author === currentUser) {
+                            const remove = document.createElement('span');
+                            remove.innerHTML = '✖';
+                            remove.style.paddingRight = '10px';
+                            remove.style.textAlign = 'right';
+                            remove.style.cursor = 'pointer';
+                            remove.title = 'Удалить';
+                            remove.addEventListener('click', () => {
+                                if (confirm('Удалить пост?')) {
+                                    posts.splice(index, 1);
+                                    localStorage.setItem('posts', JSON.stringify(posts));
+                                    load()
+                                }
+                            })
+                            top.appendChild(remove)
+                        }
+                        postDiv.appendChild(top);
+
+                        if (post.image) {
+                            const postImage = document.createElement('span');
+                            postImage.style.width = '500px';
+                            if(post.image === 'data:,'){
+                                postImage.style.height = '0';
+                            } else {
+                                postImage.style.height = '300px';
+                            }
+                            postImage.style.borderRadius = '10px';
+                            postImage.style.background = 'url('+post.image+') no-repeat center';
+                            postImage.style.backgroundSize = 'contain';
+                            postDiv.appendChild(postImage);
+                        }
+                        if (post.content) {
+                            const postContent = document.createElement('p');
+                            postContent.innerText = post.content
+                            postContent.style.padding = '5px 10px';
+                            postContent.style.width = '95%';
+                            postDiv.appendChild(postContent);
+                        }
+                        if (post.actions) {
+                            const postActions = document.createElement('div');
+                            postActions.style.display = 'flex';
+                            postActions.style.justifyContent = 'center';
+                            postActions.style.alignItems = 'center';
+                            postActions.style.width = '100%';
+                            postActions.style.padding = '5px 10px';
+
+                            const disLike = document.createElement('span');
+                            disLike.style.padding = '5px 10px';
+                            disLike.innerHTML = '<span><span style="color: red">' + post.actions.dislike +'</span> 👎</span>';
+                            disLike.style.cursor = 'pointer';
+                            disLike.addEventListener('click', ()=> {
+                                if(!posts[index].dislikedBy.includes(currentUser)) {
+                                    if(posts[index].likedBy.includes(currentUser)){
+                                        posts[index].actions.like --;
+                                    }
+                                    posts[index].actions.dislike ++;
+                                    posts[index].dislikedBy.push(currentUser)
+                                    posts[index].likedBy = posts[index].likedBy.filter(name => name !== currentUser);
+                                    localStorage.setItem('posts', JSON.stringify(posts));
+                                    load()
+                                }
+                            })
+
+                            const like = document.createElement('span');
+                            like.style.padding = '5px 10px';
+                            like.innerHTML = '<span> 👍 <span style="color: #4CAF50">' + post.actions.like +'</span></span>';
+                            like.style.cursor = 'pointer';
+                            like.addEventListener('click', () => {
+                                if (!posts[index].likedBy.includes(currentUser)) {
+                                    if(posts[index].dislikedBy.includes(currentUser)){
+                                        posts[index].actions.dislike --;
+                                    }
+                                    posts[index].actions.like ++;
+                                    posts[index].likedBy.push(currentUser)
+                                    posts[index].dislikedBy = posts[index].dislikedBy.filter(name => name !== currentUser);
+                                    localStorage.setItem('posts', JSON.stringify(posts));
+                                    load()
+                                }
+                            })
+
+                            postActions.appendChild(disLike)
+                            postActions.appendChild(like)
+                            postDiv.appendChild(postActions);
+                        }
+                        if (post.comments) {
+                            const postComments = document.createElement('div');
+                            postComments.style.display = 'flex';
+                            postComments.style.justifyContent = 'start';
+                            postComments.style.alignItems = 'center';
+                            postComments.style.flexDirection = 'column';
+                            postComments.style.width = '484px';
+                            postComments.style.maxHeight = '300px';
+                            postComments.style.padding = '5px 10px';
+                            postComments.style.overflowY = 'auto';
+                            postComments.style.overflowX = 'hidden';
+
+                            for (const comment of post.comments) {
+                                const commentSpan = document.createElement('span');
+                                commentSpan.style.padding = '5px 10px';
+                                commentSpan.style.width = '97%';
+                                commentSpan.style.border = '1px solid #ccc';
+                                commentSpan.style.borderRadius = '5px';
+                                commentSpan.style.marginBlock = '5px';
+                                commentSpan.innerHTML =
+                                    '<p style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; margin-bottom: 5px">' +
+                                    '   <span>' +
+                                    '       <span style="width: 20px; height: 20px; border-radius: 50%; background-color: #eeeeee; margin-right: 10px; display: inline-block"></span>' +
+                                    '       <b><i>' + comment.author +'</i></b>' +
+                                    '   </span><b><i>'+ comment.time + '</i></b>' +
+                                    '</p>' +
+                                    '<p>&nbsp;&nbsp;' + comment.text + '</p>';
+                                commentSpan.style.cursor = 'pointer';
+                                postComments.appendChild(commentSpan)
+                            }
+                            const currentUserName = document.createElement('span');
+                            currentUserName.style.height = '100%';
+                            currentUserName.style.width = '100%';
+                            currentUserName.style.display = 'flex';
+                            currentUserName.style.justifyContent = 'start';
+                            currentUserName.style.alignItems = 'center';
+                            currentUserName.innerHTML = "<span style='width: 30px; height: 30px; border-radius: 50%; background-color: #eeeeee; margin-right: 10px'></span>" + post.author;
+                            currentUserName.style.paddingLeft = '10px';
+
+                            const postCommentDiv = document.createElement('div');
+                            postCommentDiv.style.position = 'relative';
+                            const postCommentInput = document.createElement('div');
+                            postCommentInput.classList.add('bg-light','comment-placeholder');
+
+                            postCommentInput.contentEditable='true';
+                            postCommentInput.id = 'postCommentInput' + index;
+                            postCommentInput.style.paddingRight = '24px';
+                            postCommentInput.style.paddingLeft = '5px';
+                            postCommentInput.style.paddingTop = '5px';
+                            postCommentInput.style.paddingBottom = '5px';
+                            postCommentInput.style.marginBottom = '5px';
+                            postCommentInput.style.width = '468px';
+                            postCommentInput.style.height = '50px';
+                            postCommentInput.style.outline = 'none';
+                            postCommentInput.style.overflowY = 'auto';
+
+                            const postCommentSpan= document.createElement('span');
+                            postCommentSpan.classList.add('bg-light');
+                            postCommentSpan.textContent = '✏';
+                            postCommentSpan.style.position = 'absolute';
+                            postCommentSpan.style.width = '20px';
+                            postCommentSpan.style.height = '20px';
+                            postCommentSpan.style.bottom = '10px';
+                            postCommentSpan.style.right= '10px';
+                            postCommentSpan.style.cursor = 'pointer';
+                            postCommentSpan.style.borderRadius = '50%';
+                            postCommentSpan.style.transform = 'rotate(135deg)';
+
+
+                            postCommentSpan.onclick = () => {
+                                const value = document.getElementById('postCommentInput' + index).innerText;
+                                if(!value && value.trim() === ''){
+                                    return;
+                                }
+                                const now = new Date().toLocaleString('Uzb')
+                                const com = {
+                                    author: currentUser,
+                                    text: value,
+                                    time: now
+                                }
+                                posts[index].comments.push(com);
+                                localStorage.setItem('posts', JSON.stringify(posts));
+                                load()
+                            }
+
+                            postCommentDiv.appendChild(postCommentInput);
+                            postCommentDiv.appendChild(postCommentSpan);
+
+                            postDiv.appendChild(postCommentDiv);
+                            postDiv.appendChild(postComments);
+                        }
+                        allPosts.appendChild(postDiv);
+                    })
+                    document.body.appendChild(allPosts);
+                } else {
+                    noPost();
+                }
+            }
+        }
+        document.getElementById('username-label').innerText = currentUser;
+    }
+
+    function logout() {
+        if (confirm('Вы хотите выйти из аккаунта?')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('currentUser');
+            window.open('login.html', '_self');
+        }
+    }
+
+</script>
+
+</body>
+</html>

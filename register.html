@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="css/font-awesome.all.min.css"/>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" integrity="sha512-fD9DI5bZwQxOi7MhYWnnNPlvXdp/2Pj3XSTRrFs5FQa4mizyGLnJcN6tuvUS6LbmgN1ut+XGSABKvjN0H6Aoow==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <title>Blog</title>
+</head>
+<body>
+<nav class="navbar" style="justify-content: center !important">
+    <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-poo fa-bounce fa-xl"></i>
+    </a>
+    <ul class="navbar-nav">
+    </ul>
+</nav>
+
+<div class="container" style="height: 80vh;">
+    <div class="form-container">
+        <h2>Register</h2>
+        <form>
+            <input id="username" type="text" placeholder="Username">
+            <input id="password1" type="password" placeholder="Password">
+            <input id="password2" type="password" placeholder="Confirm Password">
+            <input type="button" value="Register" onclick="register()">
+            <div class="div-link"><span onclick="window.open('login.html', '_self');">Login</span></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+        const token = localStorage.getItem('token');
+        const users = localStorage.getItem('users');
+        const currentUser = localStorage.getItem('currentUser');
+
+        if(!token){
+            if(currentUser && !window.location.href.endsWith('login.html') && !window.location.href.endsWith('register.html')){
+                window.open('login.html', '_self');
+                return;
+            } else if (!users && !currentUser && !window.location.href.endsWith('register.html')){
+                window.open('register.html', '_self');
+                return;
+            }
+            return;
+        }
+        document.getElementById('username-label').innerText = currentUser;
+    })
+
+    function register(event) {
+        const username = document.getElementById('username').value;
+        const password1 = document.getElementById('password1').value;
+        const password2 = document.getElementById('password2').value;
+
+        if(password1 !== password2){
+            alert('Пароли должны быть идентичны')
+        }
+        let users = localStorage.getItem('users');
+        if(users){
+            users = JSON.parse(users);
+            let currentUser = users?.find(user => user.login === username);
+            if(users.length > 0 && users?.find(user => user.login === username)){
+                alert('Логин занят! Попробуйте другой');
+                return;
+            }
+            users.push({
+                login: username,
+                password: password1
+            });
+        } else {
+            users = [];
+            users.push({
+                login: username,
+                password: password1
+            });
+        }
+        localStorage.setItem('users', JSON.stringify(users));
+        window.open('login.html', '_self');
+    }
+</script>
+
+</body>
+</html>

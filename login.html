@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="css/font-awesome.all.min.css"/>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" integrity="sha512-fD9DI5bZwQxOi7MhYWnnNPlvXdp/2Pj3XSTRrFs5FQa4mizyGLnJcN6tuvUS6LbmgN1ut+XGSABKvjN0H6Aoow==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <title>Blog</title>
+</head>
+<body>
+<nav class="navbar" style="justify-content: center !important">
+    <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-poo fa-bounce fa-xl"></i>
+    </a>
+    <ul class="navbar-nav">
+    </ul>
+</nav>
+
+<div class="container" style="height: 80vh">
+    <div class="form-container">
+        <h2>Login</h2>
+        <form>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <input type="button" value="Login" onclick="login()">
+            <div class="div-link"><span onclick="window.open('register.html', '_self');">Register</span></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+        const token = localStorage.getItem('token');
+        const users = localStorage.getItem('users');
+        const currentUser = localStorage.getItem('currentUser');
+        
+        if(!token){
+            if(currentUser && !window.location.href.endsWith('login.html') && !window.location.href.endsWith('register.html')){
+                window.open('login.html', '_self');
+                return;
+            } else if (!users && !currentUser && !window.location.href.endsWith('register.html')){
+                window.open('register.html', '_self');
+                return;
+            }
+            return;
+        }
+    })
+
+    function login() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const users = JSON.parse(localStorage.getItem('users') ?? '[]');
+        const currentUser = users?.find(user => user.login === username && user.password === password);
+        if(users && currentUser){
+            localStorage.setItem('token', btoa('token'));
+            localStorage.setItem('currentUser', username);
+            window.open('index.html', '_self')
+        } else {
+            alert('Введены некорректные данные')
+        }
+    }
+</script>
+
+</body>
+</html>
